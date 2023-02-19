@@ -1,0 +1,10 @@
+[Unit]
+Description=Local dns service, defines a mapping between user defined addresses and IP from local network
+
+[Service]
+Type=simple
+WorkingDirectory=/usr/local/local_dns
+ExecStart=sudo python3 -m custom_dns
+
+[Install]
+WantedBy=default.target

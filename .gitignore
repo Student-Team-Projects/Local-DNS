@@ -1,0 +1,11 @@
+*~
+*.o
+*.lo
+*.x
+*.a
+
+.vscode
+
+*__pycache__
+
+.idea

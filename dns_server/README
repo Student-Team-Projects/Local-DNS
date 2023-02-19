@@ -1,0 +1,7 @@
+1. Compile get_ip.cpp to get_ip.x
+2. Change the config files accordingly 
+2. To start the DNS server listening on the ip address X (recommended X: "127.0.0.54") run: 
+python3 custom_dns.py --address X
+
+For more info about the args run:
+ python3 custom_dns.py --help

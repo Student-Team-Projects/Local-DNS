@@ -1,0 +1,5 @@
+[submodule "libcrafter"]
+	path = libcrafter
+	url = https://github.com/dembanakh/libcrafter.git
+[submodule "libcrafter/"]
+	branch = master
