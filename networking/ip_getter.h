@@ -1,4 +1,6 @@
 // IPGetter isolates the entire local-dns algorithm
+#pragma once
+
 #include <string>
 #include <map>
 #include <utility>
@@ -6,6 +8,7 @@
 
 #include "crafter_requester.h"
 #include "../config/DnsMapCache.h"
+
 
 class IPGetter
 {
