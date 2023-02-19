@@ -11,7 +11,6 @@ LIB = $(PROJECT_DIR)/lib
 LIB_CRAFTER_SRC = $(PROJECT_DIR)/libcrafter/libcrafter
 DNS_SERVER=$(PROJECT_DIR)/dns_server
 NETWORKING=$(PROJECT_DIR)/networking
-HOSTS=$(PROJECT_DIR)/hosts
 
 .PHONY: libcrafter
 .PHONY: clean
@@ -55,10 +54,7 @@ install:
 	cp $(CONFIG)/DnsMapUserSettings.config $(DESTDIR)$(CONFIG_LOC)
 	cp $(CONFIG)/DnsMapUser.config $(DESTDIR)$(CONFIG_LOC)
 	mkdir -p $(DESTDIR)$(PROGRAM_LOC)
-	# cp $(DNS_SERVER)/get_ip.x $(DESTDIR)/$(PROGRAM_LOC)
-	cp $(DNS_SERVER)/custom_dns.py $(DESTDIR)/$(PROGRAM_LOC)
-	cp $(HOSTS)/hosts_daemon.py $(DESTDIR)/$(PROGRAM_LOC)
+	cp $(DNS_SERVER)/main.x $(DESTDIR)/$(PROGRAM_LOC)
 	mkdir -p $(DESTDIR)$(UNIT_FILE_LOC)
 	cp installation/unit_file $(DESTDIR)$(UNIT_FILE_LOC)/local-dns.service
-	cp installation/unit_file_hosts $(DESTDIR)$(UNIT_FILE_LOC)/local-dns-hosts.service
 
