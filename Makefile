@@ -20,6 +20,8 @@ HOSTS=$(PROJECT_DIR)/hosts
 
 udp: $(NETWORKING)/ip_getter.global.o $(NETWORKING)/crafter_requester.global.o $(CONFIG)/DnsMap.global.o $(CONFIG)/DnsMapCache.global.o $(CONFIG)/DnsMapUser.global.o $(CONFIG)/DnsMapUserSettings.global.o $(LIB)/time_utils.o
 	g++ -std=c++20 -L/usr/local/lib -Wl,-rpath=/usr/local/lib -DGLOBAL=1 $(DNS_SERVER)/udp.cpp -o $(DNS_SERVER)/udp.x $(NETWORKING)/ip_getter.global.o $(NETWORKING)/crafter_requester.global.o $(CONFIG)/DnsMap.global.o $(CONFIG)/DnsMapCache.global.o $(CONFIG)/DnsMapUser.global.o $(CONFIG)/DnsMapUserSettings.global.o $(LIB)/time_utils.o -pthread -lcrafter -lnsl -lrt -lpcap -lm -lresolv
+tcp: $(NETWORKING)/ip_getter.global.o $(NETWORKING)/crafter_requester.global.o $(CONFIG)/DnsMap.global.o $(CONFIG)/DnsMapCache.global.o $(CONFIG)/DnsMapUser.global.o $(CONFIG)/DnsMapUserSettings.global.o $(LIB)/time_utils.o
+	g++ -std=c++20 -L/usr/local/lib -Wl,-rpath=/usr/local/lib -DGLOBAL=1 $(DNS_SERVER)/tcp.cpp -o $(DNS_SERVER)/tcp.x $(NETWORKING)/ip_getter.global.o $(NETWORKING)/crafter_requester.global.o $(CONFIG)/DnsMap.global.o $(CONFIG)/DnsMapCache.global.o $(CONFIG)/DnsMapUser.global.o $(CONFIG)/DnsMapUserSettings.global.o $(LIB)/time_utils.o -pthread -lcrafter -lnsl -lrt -lpcap -lm -lresolv
 
 %.global.o : %.cpp
 	g++ -DGLOBAL=1 -std=c++20 -I$(LIB_CRAFTER_SRC) -c $^ -o $@
@@ -43,7 +45,7 @@ endif
 	rm -f $(DNS_SERVER)/*.x
 
 
-local_dns: libcrafter udp
+local_dns: libcrafter udp tcp
 
 
 

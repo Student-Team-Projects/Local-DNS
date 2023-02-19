@@ -11,8 +11,7 @@
 #include "../networking/ip_getter.h"
 #include "../networking/crafter_requester.h"
 
-
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 4048
 
 std::string getDnsServerRedirect(std::string, std::string);
 
@@ -103,20 +102,23 @@ int main(int argc, char **argv) {
             };
 
     inet_pton(AF_INET, dns_address.c_str(), &server.sin_addr);
-    const int socket_ = socket(AF_INET, SOCK_DGRAM, 0);
+    const int socket_ = socket(AF_INET, SOCK_STREAM, 0);
 
     socklen_t len = sizeof(server);
     bind(socket_, (struct sockaddr *) &server, len);
-
+    listen(socket_, 10);
     while (true) {
         struct sockaddr_in client = {};
 
 
         long n;
+        int fd;
         unsigned char buffer[BUFFER_SIZE] = {};
         memset(buffer, 0, sizeof(buffer));
-        n = recvfrom(socket_, buffer, sizeof(buffer), 0, (struct sockaddr *) &client, &len);
-        Crafter::RawLayer raw(reinterpret_cast<const unsigned char *>(buffer), n);
+        fd = accept(socket_, (struct sockaddr *) &client, &len);
+        n = read(fd, buffer, sizeof(buffer));
+        std::cout << buffer << std::endl;
+        Crafter::RawLayer raw(reinterpret_cast<const unsigned char *>(buffer + 2), n - 2);
         Crafter::DNS dns;
         dns.FromRaw(raw);
         Crafter::DNS::DNSQuery dnsQuery(dns.Queries[0]);
@@ -125,15 +127,14 @@ int main(int argc, char **argv) {
         if ((dnsQuery.GetType() == Crafter::DNS::TypeA || dnsQuery.GetType() == Crafter::DNS::TypeANY) &&
             dnsQuery.GetName().ends_with("." + domain)) {
             std::string mac = dnsMapUser.getMacFromDnsName(dnsQuery.GetName());
-            std::cout << mac << std::endl;
             if (!mac.empty()) {
                 std::string ip_addr = ipgetter.get_ip(mac, dnsMapUserSettings.get_setting("cache_timeout"));
                 std::cout << ip_addr << std::endl;
                 pid_t pid = fork();
                 if (pid == 0) {
-                    buffer[2] = 0x85;                               //flags: qr aa rd ra - byte 0
-                    buffer[3] = 0x80;                               //flags: qr aa rd ra - byte 1
-                    buffer[7] = 0x01;                               //# of answers
+                    buffer[4] = 0x85;                               //flags: qr aa rd ra - byte 0
+                    buffer[5] = 0x80;                               //flags: qr aa rd ra - byte 1
+                    buffer[9] = 0x01;                               //# of answers
                     buffer[n] = 0xc0;                               //beginning mark
                     buffer[n + 1] = 0x0c;                             //offset to domain in query
                     buffer[n + 2] = 0x00;                             //Crafter::DNS::TypeA - byte 0
@@ -146,13 +147,12 @@ int main(int argc, char **argv) {
                     buffer[n + 9] = 0x3c;                             //ttl=60 - byte 3
                     buffer[n + 10] = 0x00;                            //rdlength=4 - byte 0
                     buffer[n + 11] = 0x04;                            //rdlength=4 - byte 1
-                    sscanf(ip_addr.c_str(), "%hhu.%hhu.%hhu.%hhu", &buffer[n + 12], &buffer[n + 13],
-                           &buffer[n + 14],
+                    sscanf(ip_addr.c_str(), "%hhu.%hhu.%hhu.%hhu", &buffer[n + 12], &buffer[n + 13], &buffer[n + 14],
                            &buffer[n + 15]);
 
                     n += 16;
-
-                    sendto(socket_, buffer, n, 0, (struct sockaddr *) &client, len);
+                    buffer[1] += 16; //FIXME
+                    write(fd, buffer, n);
                     exit(0);
                 }
                 continue;
@@ -160,6 +160,7 @@ int main(int argc, char **argv) {
         }
         pid_t pid = fork();
         if (pid == 0) {
+            std::cout << "using default dns\n";
             struct sockaddr_in dns_server =
                     {
                             .sin_family = AF_INET,
@@ -168,18 +169,16 @@ int main(int argc, char **argv) {
 
 
             inet_pton(AF_INET, dnsRedirect.c_str(), &dns_server.sin_addr);
-            const int dns_socket_ = socket(AF_INET, SOCK_DGRAM, 0);
+            const int dns_socket_ = socket(AF_INET, SOCK_STREAM, 0);
             socklen_t dns_len = sizeof(dns_server);
+            connect(dns_socket_, (struct sockaddr *) &dns_server, dns_len);
+            send(dns_socket_, buffer, n, 0);
 
-            sendto(dns_socket_, buffer, n, 0, (struct sockaddr *) &dns_server, dns_len);
-
-            struct sockaddr_in from = {};
             memset(buffer, 0, sizeof(buffer));
-            n = recvfrom(dns_socket_, buffer, sizeof(buffer), 0, (struct sockaddr *) &from, &dns_len);
-
+            n = read(dns_socket_, buffer, sizeof(buffer));
             shutdown(dns_socket_, SHUT_RDWR);
 
-            sendto(socket_, buffer, n, 0, (struct sockaddr *) &client, len);
+            write(fd, buffer, n);
             exit(0);
         }
     }
