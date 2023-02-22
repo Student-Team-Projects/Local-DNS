@@ -76,7 +76,7 @@ Projekt był pisany z myslą o Arch Linuksie, być może działałby również n
 ### Instalacja
 Aby zainstalować aplikację użyj:
 ```sh
-$ yay -S localdns-git
+$ yay -S local-dns
 ```
 ### Ustawienia
 Aby wkomponować nasz projekt w DNS na linuksie trzeba dodać localhosta do listy serwerow DNS. Pokazujemy jedną opcję jak to zrobić.
