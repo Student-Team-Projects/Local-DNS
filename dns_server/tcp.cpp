@@ -60,32 +60,40 @@ void tcp(int dns_port, std::string dns_address, std::string upstream_dns, int up
             if (!mac.empty()) {
                 std::string ip_addr = ipgetter.get_ip(mac, dnsMapUserSettings.get_setting("cache_timeout"));
                 std::cout << ip_addr << std::endl;
-                pid_t pid = fork();
-                if (pid == 0) {
-                    buffer[4] = 0x85;                               //flags: qr aa rd ra - byte 0
-                    buffer[5] = 0x80;                               //flags: qr aa rd ra - byte 1
-                    buffer[9] = 0x01;                               //# of answers
-                    buffer[n] = 0xc0;                               //beginning mark
-                    buffer[n + 1] = 0x0c;                             //offset to domain in query
-                    buffer[n + 2] = 0x00;                             //Crafter::DNS::TypeA - byte 0
-                    buffer[n + 3] = 0x01;                             //Crafter::DNS::TypeA - byte 1
-                    buffer[n + 4] = 0x00;                             //Crafter::DNS::ClassIN - byte 0
-                    buffer[n + 5] = 0x01;                             //Crafter::DNS::ClassIN - byte 1
-                    buffer[n + 6] = 0x00;                             //ttl=60 - byte 0
-                    buffer[n + 7] = 0x00;                             //ttl=60 - byte 1
-                    buffer[n + 8] = 0x00;                             //ttl=60 - byte 2
-                    buffer[n + 9] = 0x3c;                             //ttl=60 - byte 3
-                    buffer[n + 10] = 0x00;                            //rdlength=4 - byte 0
-                    buffer[n + 11] = 0x04;                            //rdlength=4 - byte 1
-                    sscanf(ip_addr.c_str(), "%hhu.%hhu.%hhu.%hhu", &buffer[n + 12], &buffer[n + 13], &buffer[n + 14],
-                           &buffer[n + 15]);
+                if (!ip_addr.empty()) {
+                    pid_t pid = fork();
+                    if(pid == 0) {
+                        buffer[4] = 0x85; // flags: qr aa rd ra - byte 0
+                        buffer[5] = 0x80; // flags: qr aa rd ra - byte 1
+                        buffer[9] = 0x01; // # of answers
+                        buffer[n] = 0xc0; // beginning mark
+                        buffer[n + 1] = 0x0c; // offset to domain in query
+                        buffer[n + 2] = 0x00; // Crafter::DNS::TypeA - byte 0
+                        buffer[n + 3] = 0x01; // Crafter::DNS::TypeA - byte 1
+                        buffer[n + 4] = 0x00; // Crafter::DNS::ClassIN - byte 0
+                        buffer[n + 5] = 0x01; // Crafter::DNS::ClassIN - byte 1
+                        buffer[n + 6] = 0x00; // ttl=60 - byte 0
+                        buffer[n + 7] = 0x00; // ttl=60 - byte 1
+                        buffer[n + 8] = 0x00; // ttl=60 - byte 2
+                        buffer[n + 9] = 0x3c; // ttl=60 - byte 3
+                        buffer[n + 10] = 0x00; // rdlength=4 - byte 0
+                        buffer[n + 11] = 0x04; // rdlength=4 - byte 1
+                        sscanf(
+                            ip_addr.c_str(),
+                            "%hhu.%hhu.%hhu.%hhu",
+                            &buffer[n + 12],
+                            &buffer[n + 13],
+                            &buffer[n + 14],
+                            &buffer[n + 15]
+                        );
 
-                    n += 16;
-                    buffer[1] += 16; //FIXME
-                    write(fd, buffer, n);
-                    exit(0);
+                        n += 16;
+                        buffer[1] += 16; // FIXME
+                        write(fd, buffer, n);
+                        exit(0);
+                    }
+                    continue;
                 }
-                continue;
             }
         }
         pid_t pid = fork();
