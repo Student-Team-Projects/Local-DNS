@@ -4,6 +4,7 @@
 #include <crafter.h>
 #include <fstream>
 #include <string>
+#include <optional>
 #include <getopt.h>
 
 #include "../config/DnsMapUser.h"
@@ -13,6 +14,7 @@
 
 #define BUFFER_SIZE 1024
 std::string getDnsServerRedirect(std::string, std::string);
+std::optional<std::string> getIface(DnsMapUserSettings&);
 
 void udp(int dns_port, std::string dns_address, std::string upstream_dns, int upstream_port, int timeout, std::string domain){
 
@@ -21,8 +23,13 @@ void udp(int dns_port, std::string dns_address, std::string upstream_dns, int up
     DnsMapUserSettings dnsMapUserSettings;
     std::string dnsRedirect = getDnsServerRedirect(dns_address, upstream_dns);
 
+    auto iface = getIface(dnsMapUserSettings);
+    if(!iface.has_value()) {
+        std::cout << "Local DNS error: no valid interface found" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
-    CrafterRequester requester(dnsMapUserSettings.get_setting("iface"));
+    CrafterRequester requester(iface.value());
     IPGetter ipgetter(&requester, dnsMapUser, dnsMapUserSettings.get_setting("ip_mask"), timeout);
 
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include "DnsMap.h"
 
 class DnsMapUserSettings {
@@ -16,5 +17,6 @@ private:
 public:
     DnsMapUserSettings();
 
-    std::string get_setting(std::string setting_name);
+    std::vector<std::string> get_settings(std::string const& setting_name);
+    std::string get_setting(std::string const& setting_name);
 };
