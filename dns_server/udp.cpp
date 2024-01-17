@@ -15,6 +15,7 @@
 #define BUFFER_SIZE 1024
 std::string getDnsServerRedirect(std::string, std::string);
 std::optional<std::string> getIface(DnsMapUserSettings&);
+int getCacheTimeout(DnsMapUserSettings&);
 
 void udp(int dns_port, std::string dns_address, std::string upstream_dns, int upstream_port, int timeout, std::string domain){
 
@@ -28,6 +29,8 @@ void udp(int dns_port, std::string dns_address, std::string upstream_dns, int up
         std::cout << "Local DNS error: no valid interface found" << std::endl;
         exit(EXIT_FAILURE);
     }
+
+    int cacheTimeout = getCacheTimeout(dnsMapUserSettings);
 
     CrafterRequester requester(iface.value());
     IPGetter ipgetter(&requester, dnsMapUser, dnsMapUserSettings.get_setting("ip_mask"), timeout);
@@ -64,7 +67,7 @@ void udp(int dns_port, std::string dns_address, std::string upstream_dns, int up
             std::string mac = dnsMapUser.getMacFromDnsName(dnsQuery.GetName());
             std::cout << mac << std::endl;
             if (!mac.empty()) {
-                std::string ip_addr = ipgetter.get_ip(mac, dnsMapUserSettings.get_setting("cache_timeout"));
+                std::string ip_addr = ipgetter.get_ip(mac, cacheTimeout);
                 std::cout << ip_addr << std::endl;
                 if (!ip_addr.empty()) {
                     pid_t pid = fork();

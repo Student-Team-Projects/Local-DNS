@@ -18,7 +18,6 @@
 #include "../networking/ip_getter.h"
 #include "../networking/crafter_requester.h"
 
-
 int main(int argc, char **argv) {
 
 
@@ -187,4 +186,28 @@ std::optional<std::string> getIface(DnsMapUserSettings& settings) {
         return std::make_optional(scanned[0]);
     }
     return std::nullopt;
+}
+
+int constexpr DEFAULT_CACHE_TIMEOUT = 30;
+
+int getCacheTimeout(DnsMapUserSettings& settings) {
+    auto providedTimeouts = settings.get_settings("cache_timeout");
+    if (!providedTimeouts.empty()) {
+        std::cout << "Cache timeout was provided in the config file, checking validity..." << std::endl;
+        try {
+            int result = std::stoi(providedTimeouts[0]);
+            if (result >= 0) {
+                std::cout << "Cache timeout successfully validated: " << result << std::endl;
+                return result;
+            }
+            std::cout << "Cache timeout was negative, defaulting" << std::endl;
+        } catch(std::invalid_argument) {
+            std::cout << "Cache timeout argument was invalid, defaulting" << std::endl;
+        } catch(std::out_of_range) {
+            std::cout << "Cache timeout argument was out of range, defaulting" << std::endl;
+        }
+    } else
+        std::cout << "No cache timeout was provided in the config file, defaulting" << std::endl;
+    std::cout << "Default cache timeout: " << DEFAULT_CACHE_TIMEOUT << std::endl;
+    return DEFAULT_CACHE_TIMEOUT;
 }

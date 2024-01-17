@@ -25,7 +25,7 @@ private:
 
     std::string wait_for_promise(std::promise<std::string>& promise);
 public:
-    std::string get_ip(std::string mac, std::string cache_timeout); //This is the API the rest of the program has to call in order to invoke local-dns for a certain mac address
+    std::string get_ip(std::string mac, int cacheTimeout); //This is the API the rest of the program has to call in order to invoke local-dns for a certain mac address
     
     IPGetter(CrafterRequester *requester, DnsMapUser& dnsMapUser, std::string local_network_ip_mask1="192.168.0.*", int timeout1=1000);
 };

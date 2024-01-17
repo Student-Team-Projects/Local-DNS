@@ -14,6 +14,7 @@
 
 #define BUFFER_SIZE 1024
 std::string getDnsServerRedirect(std::string, std::string);
+int getCacheTimeout(DnsMapUserSettings&);
 
 void tcp(int dns_port, std::string dns_address, std::string upstream_dns, int upstream_port, int timeout, std::string domain){
     DnsMapUser dnsMapUser;
@@ -24,6 +25,7 @@ void tcp(int dns_port, std::string dns_address, std::string upstream_dns, int up
     CrafterRequester requester(dnsMapUserSettings.get_setting("iface"));
     IPGetter ipgetter(&requester, dnsMapUser, dnsMapUserSettings.get_setting("ip_mask"), timeout);
 
+    int cacheTimeout = getCacheTimeout(dnsMapUserSettings);
 
     struct sockaddr_in server =
             {
@@ -58,7 +60,7 @@ void tcp(int dns_port, std::string dns_address, std::string upstream_dns, int up
             dnsQuery.GetName().ends_with("." + domain)) {
             std::string mac = dnsMapUser.getMacFromDnsName(dnsQuery.GetName());
             if (!mac.empty()) {
-                std::string ip_addr = ipgetter.get_ip(mac, dnsMapUserSettings.get_setting("cache_timeout"));
+                std::string ip_addr = ipgetter.get_ip(mac, cacheTimeout);
                 std::cout << ip_addr << std::endl;
                 if (!ip_addr.empty()) {
                     pid_t pid = fork();

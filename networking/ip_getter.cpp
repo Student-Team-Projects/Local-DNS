@@ -22,11 +22,11 @@ std::string IPGetter::wait_for_promise(std::promise<std::string> &promise) {
    }
 }
 
-std::string IPGetter::get_ip(std::string mac, std::string cache_timeout = "1") {
+std::string IPGetter::get_ip(std::string mac, int cacheTimeout) {
    //std::cout << "Request: MAC=" << mac << std::endl;
 
    std::vector<std::string> cacheAttributes = dnsMapCache.getIpAttributes(mac);
-   if (!cacheAttributes.empty() && TimeUtils::valid(cacheAttributes[1], std::stoi(cache_timeout))) {
+   if (!cacheAttributes.empty() && TimeUtils::valid(cacheAttributes[1], cacheTimeout)) {
        //std::cout << "Using cache" << std::endl;
        return cacheAttributes[0];
    }
