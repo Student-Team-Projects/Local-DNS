@@ -20,7 +20,6 @@ class CrafterRequester: public Requester
           std::string iface;
 
           std::string myIP;
-          std::string myMAC;
 
           Crafter::Ethernet ethernetHeaderTemplate;
           Crafter::ARP arpHeaderTemplate;

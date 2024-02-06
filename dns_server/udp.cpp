@@ -15,6 +15,7 @@
 #define BUFFER_SIZE 1024
 std::string getDnsServerRedirect(std::string, std::string);
 std::optional<std::string> getIface(DnsMapUserSettings&);
+std::optional<std::string> getMask(DnsMapUserSettings&, std::string const&);
 int getCacheTimeout(DnsMapUserSettings&);
 
 void udp(int dns_port, std::string dns_address, std::string upstream_dns, int upstream_port, int timeout, std::string domain){
@@ -30,10 +31,16 @@ void udp(int dns_port, std::string dns_address, std::string upstream_dns, int up
         exit(EXIT_FAILURE);
     }
 
+    auto mask = getMask(dnsMapUserSettings, iface.value());
+    if(!mask.has_value()) {
+        std::cout << "Local DNS error: could not establish a valid mask" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     int cacheTimeout = getCacheTimeout(dnsMapUserSettings);
 
     CrafterRequester requester(iface.value());
-    IPGetter ipgetter(&requester, dnsMapUser, dnsMapUserSettings.get_setting("ip_mask"), timeout);
+    IPGetter ipgetter(&requester, dnsMapUser, mask.value(), timeout);
 
 
     struct sockaddr_in server =
@@ -60,7 +67,7 @@ void udp(int dns_port, std::string dns_address, std::string upstream_dns, int up
         Crafter::DNS dns;
         dns.FromRaw(raw);
         Crafter::DNS::DNSQuery dnsQuery(dns.Queries[0]);
-        std::cout << dnsQuery.GetName() << std::endl;
+        std::cout << "Queried: " << dnsQuery.GetName() << std::endl;
 
         if ((dnsQuery.GetType() == Crafter::DNS::TypeA || dnsQuery.GetType() == Crafter::DNS::TypeANY) &&
             dnsQuery.GetName().ends_with("." + domain)) {
@@ -68,7 +75,7 @@ void udp(int dns_port, std::string dns_address, std::string upstream_dns, int up
             std::cout << mac << std::endl;
             if (!mac.empty()) {
                 std::string ip_addr = ipgetter.get_ip(mac, cacheTimeout);
-                std::cout << ip_addr << std::endl;
+                std::cout << "IPGetter returned: " << ip_addr << std::endl;
                 if (!ip_addr.empty()) {
                     pid_t pid = fork();
                     if(pid == 0) {

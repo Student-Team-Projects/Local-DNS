@@ -17,6 +17,7 @@
 #include "../config/DnsMapUserSettings.h"
 #include "../networking/ip_getter.h"
 #include "../networking/crafter_requester.h"
+#include "../networking/utils.h"
 
 int main(int argc, char **argv) {
 
@@ -126,7 +127,7 @@ static bool areValidIfaceFlags(int flags) {
 static bool isValidIface(std::string const& iface, int socketFd, ifreq* ifr) {
     if (iface.length() >= IFNAMSIZ)
         return false;
-    std::memset(ifr, 0, sizeof(ifr));
+    std::memset(ifr, 0, sizeof(ifreq));
     strcpy(ifr->ifr_name, iface.c_str());
     if (ioctl(socketFd, SIOCGIFFLAGS, ifr) != 0)
         return false;
@@ -210,4 +211,24 @@ int getCacheTimeout(DnsMapUserSettings& settings) {
         std::cout << "No cache timeout was provided in the config file, defaulting" << std::endl;
     std::cout << "Default cache timeout: " << DEFAULT_CACHE_TIMEOUT << std::endl;
     return DEFAULT_CACHE_TIMEOUT;
+}
+
+std::string const DEFAULT_IP_MASK = "255.255.255.0";
+
+std::optional<std::string> getMask(DnsMapUserSettings& settings, std::string const& iface) {
+    auto masks = settings.get_settings("ip_mask");
+    // Here, we are creating a dummy socket
+    // It will not really be used, its only purpose is to be passed to `ioctl` as a valid file descriptor
+    int socketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (socketFd == -1)
+        return std::nullopt;
+    ifreq ifr;
+    std::string ifaceMask;
+    std::memset(&ifr, 0, sizeof(ifreq));
+    strcpy(ifr.ifr_name, iface.c_str());
+    if (ioctl(socketFd, SIOCGIFNETMASK, &ifr) == 0)
+        masks.emplace_back(ifr.ifr_netmask.sa_data);
+    close(socketFd);
+    masks.emplace_back(DEFAULT_IP_MASK);
+    return getShortestValidMask(masks);
 }

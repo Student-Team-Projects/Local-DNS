@@ -1,7 +1,11 @@
 #include <thread>
 #include <iostream>
+#include <set>
+#include <vector>
 
 #include "crafter_requester.h"
+
+#include "utils.h"
 
 CrafterRequester::CrafterRequester(std::string iface) : Requester(), iface(iface) {
     myIP = Crafter::GetMyIP(iface);
@@ -9,7 +13,7 @@ CrafterRequester::CrafterRequester(std::string iface) : Requester(), iface(iface
         std::cerr << "Local DNS error: invalid interface" << std::endl;
         exit(1);
     }
-    myMAC = Crafter::GetMyMAC(iface);
+    auto myMAC = Crafter::GetMyMAC(iface);
     if (myMAC.empty()) {
         std::cerr << "Local DNS error: invalid interface" << std::endl;
         exit(1);
@@ -27,13 +31,14 @@ void CrafterRequester::listen_for_requests() {
     std::thread([this]() {
             while (true) {
                 auto request = this->requests.pop();
-                std::string ipMask = request.first;
+                std::string mask = request.first;
                 std::string mac = request.second;
                 this->ethernetHeaderTemplate.SetDestinationMAC(mac);
-                std::vector<std::string> net = Crafter::GetIPs(ipMask);
+                std::set<std::string> net = getIPs(myIP, mask);
                 std::vector<Crafter::Packet*> packets;
-                for (auto ipAddr = net.begin(); ipAddr != net.end(); ipAddr++) {
-                    this->arpHeaderTemplate.SetTargetIP(*ipAddr);
+                for (auto const& ipAddr : net) {
+                    std::cout << "ARP: " << ipAddr << "\n";
+                    this->arpHeaderTemplate.SetTargetIP(ipAddr);
                     Crafter::Packet *packet = new Crafter::Packet;
                     packet->PushLayer(this->ethernetHeaderTemplate);
                     packet->PushLayer(this->arpHeaderTemplate);
@@ -65,6 +70,6 @@ void CrafterRequester::listen_for_requests() {
     }).detach();
 }
 
-void CrafterRequester::request(std::string ip_mask, std::string mac_requested) {
-	requests.push(make_pair(ip_mask, mac_requested));
+void CrafterRequester::request(std::string mask, std::string macRequested) {
+	requests.push(std::make_pair(mask, macRequested));
 }

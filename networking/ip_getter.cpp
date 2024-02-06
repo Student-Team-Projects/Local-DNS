@@ -8,7 +8,12 @@
 #include <utility>
 #include <vector>
 
-IPGetter::IPGetter(CrafterRequester *requester, DnsMapUser& dnsMapUser, std::string local_network_ip_mask1 /*="192.168.0.*"*/, int timeout1 /*=1000*/) : requester(requester), map(&requester->map), map_lock(requester->map_lock), local_network_ip_mask(local_network_ip_mask1), timeout(timeout1) {
+IPGetter::IPGetter(CrafterRequester *requester, DnsMapUser& dnsMapUser, std::string local_network_ip_mask, int timeout)
+    : requester(requester)
+    , map(&requester->map)
+    , map_lock(requester->map_lock)
+    , local_network_ip_mask(local_network_ip_mask)
+    , timeout(timeout) {
      dnsMapCache.synchronizeCacheWithUserConfig(dnsMapUser);
 }
 
