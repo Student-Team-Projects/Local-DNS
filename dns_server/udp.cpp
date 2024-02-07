@@ -23,9 +23,9 @@ void udp(int dns_port, std::string dns_address, std::string upstream_dns, int up
 
     int cacheTimeout = getCacheTimeout(dnsMapUserSettings);
 
-    CrafterRequester requester(iface.value());
-
     dnsMapCache.synchronizeCacheWithUserConfig(dnsMapUser);
+    
+    CrafterRequester requester(iface.value(), &dnsMapCache);
     IPGetter ipgetter(&requester, &dnsMapCache, mask.value(), timeout);
 
     struct sockaddr_in server =

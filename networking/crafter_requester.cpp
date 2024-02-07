@@ -7,7 +7,7 @@
 
 #include "utils.h"
 
-CrafterRequester::CrafterRequester(std::string iface) : Requester(), iface(iface) {
+CrafterRequester::CrafterRequester(std::string iface, DnsMapCache *dnsMapCache) : Requester(), iface(iface), dnsMapCache(dnsMapCache) {
     myIP = Crafter::GetMyIP(iface);
     if (myIP.empty()) {
         std::cerr << "Local DNS error: invalid interface" << std::endl;
@@ -54,6 +54,10 @@ void CrafterRequester::listen_for_requests() {
                         Crafter::ARP* arp_layer = reply_packet->GetLayer<Crafter::ARP>();
                         std::string mac = arp_layer->GetSenderMAC();
                         std::string IP = arp_layer->GetSenderIP();
+                        if(!IP.empty()) { 
+                            std::vector<std::string> cacheAttributes = {IP, TimeUtils::timeNow()};
+                            dnsMapCache->updateEntry(mac, cacheAttributes);
+                        }
                         std::lock_guard<std::mutex> guard(this->map_lock);
                         auto promise = this->map.find(mac);
                         if (promise != this->map.end()){
@@ -61,7 +65,6 @@ void CrafterRequester::listen_for_requests() {
                             this->map.erase(promise);
                         }
                     }
-
                 }
 
                 Crafter::ClearContainer(packets);
@@ -70,6 +73,6 @@ void CrafterRequester::listen_for_requests() {
     }).detach();
 }
 
-void CrafterRequester::request(std::string mask, std::string macRequested, DnsMapCache *dnsMapCache) {
+void CrafterRequester::request(std::string mask, std::string macRequested) {
 	requests.push(std::make_pair(mask, macRequested));
 }

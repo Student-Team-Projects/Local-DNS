@@ -41,7 +41,7 @@ std::optional<uint32_t> hostBitsOf(std::string const& mask) {
 }
 
 std::optional<uint32_t> hostBitsOf(uint32_t mask) {
-    for(uint32_t i = 2; i <= 8; i++)
+    for(uint32_t i = MIN_HOST_BITS; i <= MAX_HOST_BITS; i++)
         if((~mask) == (1u << i) - 1u)
             return std::make_optional(i);
     return std::nullopt;

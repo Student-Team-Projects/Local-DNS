@@ -6,10 +6,9 @@ void tcp(int dns_port, std::string dns_address, std::string upstream_dns, int up
     DnsMapCache dnsMapCache;
     std::string dnsRedirect = getDnsServerRedirect(dns_address, upstream_dns);
 
-
-    CrafterRequester requester(dnsMapUserSettings.get_setting("iface"));
-
     dnsMapCache.synchronizeCacheWithUserConfig(dnsMapUser);
+
+    CrafterRequester requester(dnsMapUserSettings.get_setting("iface"), &dnsMapCache);
     IPGetter ipgetter(&requester, &dnsMapCache, dnsMapUserSettings.get_setting("ip_mask"), timeout);
 
     int cacheTimeout = getCacheTimeout(dnsMapUserSettings);

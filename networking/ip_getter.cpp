@@ -35,21 +35,13 @@ std::string IPGetter::get_ip(std::string mac, int cacheTimeout) {
        return cacheAttributes[0];
    }
 
-   std::promise<std::string> result;
-   std::pair<std::map<std::string, std::promise<std::string> *>::iterator, bool> entry;
+   std::shared_ptr<std::promise<std::string>> result = std::make_shared<std::promise<std::string>>();
+   std::pair<std::map<std::string, std::shared_ptr<std::promise<std::string>>>::iterator, bool> entry;
    {
       std::lock_guard<std::mutex> guard(map_lock);
-      entry = map->emplace(mac, &result);
+      entry = map->emplace(mac, result);
    }
    requester->request(local_network_ip_mask, mac);
-   std::string resultIP = wait_for_promise(result);
-   if (resultIP.empty()) {
-       //std::cerr << "error: empty IP" << std::endl;
-       //exit(1);
-   } else {
-       cacheAttributes.push_back(resultIP);
-       cacheAttributes.push_back(TimeUtils::timeNow());
-       dnsMapCache->updateEntry(mac, cacheAttributes);
-   }
+   std::string resultIP = wait_for_promise(*result);
    return resultIP;
 }

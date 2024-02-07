@@ -5,6 +5,7 @@
 #include <map>
 #include <utility>
 #include <future>
+#include <memory>
 
 #include "crafter_requester.h"
 #include "../config/DnsMapCache.h"
@@ -16,7 +17,7 @@ private:
     std::string local_network_ip_mask; //Something like "192.168.0.*"
     CrafterRequester *requester;
  
-    std::map<std::string, std::promise<std::string>*>* map;
+    std::map<std::string, std::shared_ptr<std::promise<std::string>>>* map;
     std::mutex& map_lock;
 
     int timeout; //in miliseconds
