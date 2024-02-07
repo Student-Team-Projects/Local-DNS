@@ -49,7 +49,8 @@ std::optional<uint32_t> hostBitsOf(uint32_t mask) {
 
 std::optional<std::string> getShortestValidMask(std::vector<std::string> const& masks) {
     std::string shortest;
-    uint32_t len = MAX_HOST_BITS + 1; // bigger than the max so that we know whether there were any valid masks
+    uint32_t len = MAX_HOST_BITS + 1; // bigger than the max so that we know whether there were any valid
+                                      // masks
     for(auto const& mask : masks) {
         auto host = hostBitsOf(mask);
         if(!host.has_value())

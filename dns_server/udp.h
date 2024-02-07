@@ -14,4 +14,11 @@
 #include "../networking/ip_getter.h"
 #include "../networking/crafter_requester.h"
 
-void udp(int dns_port, std::string dns_address, std::string upstream_dns, int upstream_port, int timeout, std::string domain);
+void udp(
+    int dns_port,
+    std::string dns_address,
+    std::string upstream_dns,
+    int upstream_port,
+    int timeout,
+    std::string domain
+);

@@ -13,4 +13,11 @@
 #include "../networking/ip_getter.h"
 #include "../networking/crafter_requester.h"
 
-void tcp(int dns_port, std::string dns_address, std::string upstream_dns, int upstream_port, int timeout, std::string domain);
+void tcp(
+    int dns_port,
+    std::string dns_address,
+    std::string upstream_dns,
+    int upstream_port,
+    int timeout,
+    std::string domain
+);

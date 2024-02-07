@@ -20,8 +20,7 @@
 #include "../networking/crafter_requester.h"
 #include "../networking/utils.h"
 
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv) {
 
     int c;
     int dns_port = 53;
@@ -32,54 +31,48 @@ int main(int argc, char **argv) {
     int timeout = 3000;
     std::string domain = "localdns";
 
-    static struct option long_options[] =
-            {
-                    {"port",     required_argument, 0, 'p'},
-                    {"address",  required_argument, 0, 'a'},
-                    {"upstream", required_argument, 0, 'u'},
-                    {"tcp",      required_argument, 0, 't'},
-                    {"timeout",  required_argument, 0, 'o'},
-                    {"domain",   required_argument, 0, 'd'}
-            };
-    while (1) {
+    static struct option long_options[] = {
+        { "port", required_argument, 0, 'p' },     { "address", required_argument, 0, 'a' },
+        { "upstream", required_argument, 0, 'u' }, { "tcp", required_argument, 0, 't' },
+        { "timeout", required_argument, 0, 'o' },  { "domain", required_argument, 0, 'd' }
+    };
+    while(1) {
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long(argc, argv, "p:a:u:o:d",
-                        long_options, &option_index);
+        c = getopt_long(argc, argv, "p:a:u:o:d", long_options, &option_index);
 
         /* Detect the end of the options. */
-        if (c == -1)
+        if(c == -1)
             break;
 
         std::string pom;
         int val;
-        switch (c) {
-            case 'p':
-                dns_port = std::atoi(optarg);
-                break;
-            case 'a':
-                dns_address = optarg;
-                break;
-            case 'u':
-                pom = optarg;
-                val = pom.find(":");
-                upstream_dns = pom.substr(0, val);
-                pom = pom.substr(val + 1);
-                upstream_port = std::stoi(pom);
-                break;
-            case 'o':
-                timeout = std::atoi(optarg);
-                break;
-            case 'd':
-                domain = optarg;
-                break;
-            case 't':
-                domain =
-                is_tcp = std::stoi(optarg);
-                break;
-            default:
-                break;
+        switch(c) {
+        case 'p':
+            dns_port = std::atoi(optarg);
+            break;
+        case 'a':
+            dns_address = optarg;
+            break;
+        case 'u':
+            pom = optarg;
+            val = pom.find(":");
+            upstream_dns = pom.substr(0, val);
+            pom = pom.substr(val + 1);
+            upstream_port = std::stoi(pom);
+            break;
+        case 'o':
+            timeout = std::atoi(optarg);
+            break;
+        case 'd':
+            domain = optarg;
+            break;
+        case 't':
+            domain = is_tcp = std::stoi(optarg);
+            break;
+        default:
+            break;
         }
     }
     printf("dns_port: %d\n", dns_port);
@@ -92,9 +85,9 @@ int main(int argc, char **argv) {
 
     Crafter::InitCrafter();
 
-    if (is_tcp) {
+    if(is_tcp) {
         pid_t pid = fork();
-        if (pid == 0) {
+        if(pid == 0) {
             tcp(dns_port, dns_address, upstream_dns, upstream_port, timeout, domain);
         }
     }

@@ -1,6 +1,13 @@
 #include "tcp.h"
 
-void tcp(int dns_port, std::string dns_address, std::string upstream_dns, int upstream_port, int timeout, std::string domain){
+void tcp(
+    int dns_port,
+    std::string dns_address,
+    std::string upstream_dns,
+    int upstream_port,
+    int timeout,
+    std::string domain
+) {
     DnsMapUser dnsMapUser;
     DnsMapUserSettings dnsMapUserSettings;
     DnsMapCache dnsMapCache;
@@ -13,42 +20,37 @@ void tcp(int dns_port, std::string dns_address, std::string upstream_dns, int up
 
     int cacheTimeout = getCacheTimeout(dnsMapUserSettings);
 
-    struct sockaddr_in server =
-            {
-                    .sin_family = AF_INET,
-                    .sin_port = htons(dns_port)
-            };
+    struct sockaddr_in server = { .sin_family = AF_INET, .sin_port = htons(dns_port) };
 
     inet_pton(AF_INET, dns_address.c_str(), &server.sin_addr);
-    const int socket_ = socket(AF_INET, SOCK_STREAM, 0);
+    int const socket_ = socket(AF_INET, SOCK_STREAM, 0);
 
     socklen_t len = sizeof(server);
-    bind(socket_, (struct sockaddr *) &server, len);
+    bind(socket_, (struct sockaddr*)&server, len);
     listen(socket_, 10);
-    while (true) {
+    while(true) {
         struct sockaddr_in client = {};
-
 
         long n;
         int fd;
         unsigned char buffer[BUFFER_SIZE] = {};
         memset(buffer, 0, sizeof(buffer));
-        fd = accept(socket_, (struct sockaddr *) &client, &len);
+        fd = accept(socket_, (struct sockaddr*)&client, &len);
         n = read(fd, buffer, sizeof(buffer));
         std::cout << buffer << std::endl;
-        Crafter::RawLayer raw(reinterpret_cast<const unsigned char *>(buffer + 2), n - 2);
+        Crafter::RawLayer raw(reinterpret_cast<unsigned char const*>(buffer + 2), n - 2);
         Crafter::DNS dns;
         dns.FromRaw(raw);
         Crafter::DNS::DNSQuery dnsQuery(dns.Queries[0]);
         std::cout << dnsQuery.GetName() << std::endl;
 
-        if ((dnsQuery.GetType() == Crafter::DNS::TypeA || dnsQuery.GetType() == Crafter::DNS::TypeANY) &&
-            dnsQuery.GetName().ends_with("." + domain)) {
+        if((dnsQuery.GetType() == Crafter::DNS::TypeA || dnsQuery.GetType() == Crafter::DNS::TypeANY) &&
+           dnsQuery.GetName().ends_with("." + domain)) {
             std::string mac = dnsMapUser.getMacFromDnsName(dnsQuery.GetName());
-            if (!mac.empty()) {
+            if(!mac.empty()) {
                 std::string ip_addr = ipgetter.get_ip(mac, cacheTimeout);
                 std::cout << ip_addr << std::endl;
-                if (!ip_addr.empty()) {
+                if(!ip_addr.empty()) {
                     pid_t pid = fork();
                     if(pid == 0) {
                         buffer[4] = 0x85; // flags: qr aa rd ra - byte 0
@@ -85,19 +87,14 @@ void tcp(int dns_port, std::string dns_address, std::string upstream_dns, int up
             }
         }
         pid_t pid = fork();
-        if (pid == 0) {
+        if(pid == 0) {
             std::cout << "using default dns\n";
-            struct sockaddr_in dns_server =
-                    {
-                            .sin_family = AF_INET,
-                            .sin_port = htons(upstream_port)
-                    };
-
+            struct sockaddr_in dns_server = { .sin_family = AF_INET, .sin_port = htons(upstream_port) };
 
             inet_pton(AF_INET, dnsRedirect.c_str(), &dns_server.sin_addr);
-            const int dns_socket_ = socket(AF_INET, SOCK_STREAM, 0);
+            int const dns_socket_ = socket(AF_INET, SOCK_STREAM, 0);
             socklen_t dns_len = sizeof(dns_server);
-            connect(dns_socket_, (struct sockaddr *) &dns_server, dns_len);
+            connect(dns_socket_, (struct sockaddr*)&dns_server, dns_len);
             send(dns_socket_, buffer, n, 0);
 
             memset(buffer, 0, sizeof(buffer));

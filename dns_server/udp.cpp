@@ -1,6 +1,13 @@
 #include "udp.h"
 
-void udp(int dns_port, std::string dns_address, std::string upstream_dns, int upstream_port, int timeout, std::string domain){
+void udp(
+    int dns_port,
+    std::string dns_address,
+    std::string upstream_dns,
+    int upstream_port,
+    int timeout,
+    std::string domain
+) {
 
     Crafter::InitCrafter();
     DnsMapUser dnsMapUser;
@@ -24,44 +31,39 @@ void udp(int dns_port, std::string dns_address, std::string upstream_dns, int up
     int cacheTimeout = getCacheTimeout(dnsMapUserSettings);
 
     dnsMapCache.synchronizeCacheWithUserConfig(dnsMapUser);
-    
+
     CrafterRequester requester(iface.value(), &dnsMapCache);
     IPGetter ipgetter(&requester, &dnsMapCache, mask.value(), timeout);
 
-    struct sockaddr_in server =
-            {
-                    .sin_family = AF_INET,
-                    .sin_port = htons(dns_port)
-            };
+    struct sockaddr_in server = { .sin_family = AF_INET, .sin_port = htons(dns_port) };
 
     inet_pton(AF_INET, dns_address.c_str(), &server.sin_addr);
-    const int socket_ = socket(AF_INET, SOCK_DGRAM, 0);
+    int const socket_ = socket(AF_INET, SOCK_DGRAM, 0);
 
     socklen_t len = sizeof(server);
-    bind(socket_, (struct sockaddr *) &server, len);
+    bind(socket_, (struct sockaddr*)&server, len);
 
-    while (true) {
+    while(true) {
         struct sockaddr_in client = {};
-
 
         long n;
         unsigned char buffer[BUFFER_SIZE] = {};
         memset(buffer, 0, sizeof(buffer));
-        n = recvfrom(socket_, buffer, sizeof(buffer), 0, (struct sockaddr *) &client, &len);
-        Crafter::RawLayer raw(reinterpret_cast<const unsigned char *>(buffer), n);
+        n = recvfrom(socket_, buffer, sizeof(buffer), 0, (struct sockaddr*)&client, &len);
+        Crafter::RawLayer raw(reinterpret_cast<unsigned char const*>(buffer), n);
         Crafter::DNS dns;
         dns.FromRaw(raw);
         Crafter::DNS::DNSQuery dnsQuery(dns.Queries[0]);
         std::cout << "Queried: " << dnsQuery.GetName() << std::endl;
 
-        if ((dnsQuery.GetType() == Crafter::DNS::TypeA || dnsQuery.GetType() == Crafter::DNS::TypeANY) &&
-            dnsQuery.GetName().ends_with("." + domain)) {
+        if((dnsQuery.GetType() == Crafter::DNS::TypeA || dnsQuery.GetType() == Crafter::DNS::TypeANY) &&
+           dnsQuery.GetName().ends_with("." + domain)) {
             std::string mac = dnsMapUser.getMacFromDnsName(dnsQuery.GetName());
             std::cout << mac << std::endl;
-            if (!mac.empty()) {
+            if(!mac.empty()) {
                 std::string ip_addr = ipgetter.get_ip(mac, cacheTimeout);
                 std::cout << "IPGetter returned: " << ip_addr << std::endl;
-                if (!ip_addr.empty()) {
+                if(!ip_addr.empty()) {
                     pid_t pid = fork();
                     if(pid == 0) {
                         buffer[2] = 0x85; // flags: qr aa rd ra - byte 0
@@ -98,27 +100,22 @@ void udp(int dns_port, std::string dns_address, std::string upstream_dns, int up
             }
         }
         pid_t pid = fork();
-        if (pid == 0) {
-            struct sockaddr_in dns_server =
-                    {
-                            .sin_family = AF_INET,
-                            .sin_port = htons(upstream_port)
-                    };
-
+        if(pid == 0) {
+            struct sockaddr_in dns_server = { .sin_family = AF_INET, .sin_port = htons(upstream_port) };
 
             inet_pton(AF_INET, dnsRedirect.c_str(), &dns_server.sin_addr);
-            const int dns_socket_ = socket(AF_INET, SOCK_DGRAM, 0);
+            int const dns_socket_ = socket(AF_INET, SOCK_DGRAM, 0);
             socklen_t dns_len = sizeof(dns_server);
 
-            sendto(dns_socket_, buffer, n, 0, (struct sockaddr *) &dns_server, dns_len);
+            sendto(dns_socket_, buffer, n, 0, (struct sockaddr*)&dns_server, dns_len);
 
             struct sockaddr_in from = {};
             memset(buffer, 0, sizeof(buffer));
-            n = recvfrom(dns_socket_, buffer, sizeof(buffer), 0, (struct sockaddr *) &from, &dns_len);
+            n = recvfrom(dns_socket_, buffer, sizeof(buffer), 0, (struct sockaddr*)&from, &dns_len);
 
             shutdown(dns_socket_, SHUT_RDWR);
 
-            sendto(socket_, buffer, n, 0, (struct sockaddr *) &client, len);
+            sendto(socket_, buffer, n, 0, (struct sockaddr*)&client, len);
             exit(0);
         }
     }

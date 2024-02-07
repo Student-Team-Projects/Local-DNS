@@ -10,7 +10,7 @@ bool TimeUtils::valid(std::string timestamp, int termOfValidityDays) {
     std::tm tm;
     ss >> std::get_time(&tm, TIME_FORMAT);
     auto timepointIn = std::chrono::system_clock::from_time_t(std::mktime(&tm));
-    auto timepointNow= std::chrono::system_clock::now();
+    auto timepointNow = std::chrono::system_clock::now();
     auto diff = std::chrono::duration_cast<std::chrono::days>(timepointNow - timepointIn);
     return diff.count() < termOfValidityDays;
 }

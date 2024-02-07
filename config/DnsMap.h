@@ -6,7 +6,6 @@
 #include <unordered_set>
 #include "../lib/nlohmann/json.hpp"
 
-
 class DnsMap {
 private:
     std::string filename;
@@ -17,14 +16,13 @@ private:
 public:
     DnsMap(std::string filename);
 
-    static void createFile(const std::string &filename);
+    static void createFile(std::string const& filename);
 
     std::unordered_set<std::string> entries();
 
     void updateMap();
 
-    void
-    updateEntry(const std::string &key, const std::vector<std::string> &attr, bool updateMap = false);
+    void updateEntry(std::string const& key, std::vector<std::string> const& attr, bool updateMap = false);
 
-    std::vector<std::string> getEntry(const std::string &key);
+    std::vector<std::string> getEntry(std::string const& key);
 };
