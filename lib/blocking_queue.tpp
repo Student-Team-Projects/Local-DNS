@@ -1,6 +1,6 @@
 
-template <typename T>
-void BlockingQueue<T>::push(const T& value) {
+template<typename T>
+void BlockingQueue<T>::push(T const& value) {
     {
         std::unique_lock<std::mutex> lock(mutex);
         queue.push(value);
@@ -8,10 +8,10 @@ void BlockingQueue<T>::push(const T& value) {
     condition.notify_one();
 }
 
-template <typename T>
+template<typename T>
 T BlockingQueue<T>::pop() {
     std::unique_lock<std::mutex> lock(mutex);
-    condition.wait(lock, [=, this]{ return !queue.empty(); });
+    condition.wait(lock, [=, this] { return !queue.empty(); });
     T value(std::move(queue.front()));
     queue.pop();
     return value;

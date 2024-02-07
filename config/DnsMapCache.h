@@ -7,19 +7,20 @@
 class DnsMapCache {
 private:
     std::mutex m;
-    #if GLOBAL
-        const std::string filename = "/var/cache/local_dns/DnsMapCache.config";
-    #else
-        const std::string filename = "../config/DnsMapCache.config";
-    #endif
+#if GLOBAL
+    std::string const filename = "/var/cache/local_dns/DnsMapCache.config";
+#else
+    std::string const filename = "../config/DnsMapCache.config";
+#endif
     DnsMap dnsMap;
+
 public:
     DnsMapCache();
 
-    void updateEntry(const std::string &dns_name, const std::vector<std::string> &attributes);
+    void updateEntry(std::string const& dns_name, std::vector<std::string> const& attributes);
 
     // returns {ip, timestamp} vector
-    std::vector<std::string> getIpAttributes(const std::string &mac);
+    std::vector<std::string> getIpAttributes(std::string const& mac);
 
     void synchronizeCacheWithUserConfig(DnsMapUser& dnsMapUser);
 };

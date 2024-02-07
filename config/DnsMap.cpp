@@ -7,14 +7,14 @@ std::string DnsMap::prettifyLine(std::string line, bool insertComma) {
     line = line.substr(1); // remove first {
     line = line.substr(0, line.length() - 1); // remove last }
     line.insert(0, LINE_PADDING, ' '); // add extra padding
-    if (insertComma) {
+    if(insertComma) {
         line += ',';
     }
     return line;
 }
 
-void DnsMap::createFile(const std::string &name) {
-    if (std::ifstream(name)) { // check if file already exists
+void DnsMap::createFile(std::string const& name) {
+    if(std::ifstream(name)) { // check if file already exists
         return;
     }
     std::ofstream file(name);
@@ -28,9 +28,8 @@ void DnsMap::updateMap() {
     updateEntry("", {}, true);
 }
 
-void DnsMap::updateEntry(const std::string &key,
-                              const std::vector<std::string> &attr, bool updateMap) {
-    if (updateMap) {
+void DnsMap::updateEntry(std::string const& key, std::vector<std::string> const& attr, bool updateMap) {
+    if(updateMap) {
         this->mac_set.clear();
     }
     std::string copyFileName = filename + "copy";
@@ -43,19 +42,20 @@ void DnsMap::updateEntry(const std::string &key,
     std::string line;
     bool entryUpdated = false; // indicate whether key creates new entry
 
-    while (getline(configFile, line)) {
+    while(getline(configFile, line)) {
         auto first_character = line.find_first_not_of(' ');
-        if (first_character == std::string::npos || line[first_character] == '/' || line[first_character] == '{') {
+        if(first_character == std::string::npos || line[first_character] == '/' ||
+           line[first_character] == '{') {
             copyFile << line << std::endl;
             continue;
         }
 
-        if (line[first_character] == '}') {
-            if (entryUpdated) {
+        if(line[first_character] == '}') {
+            if(entryUpdated) {
                 copyFile << line << std::endl;
             } else {
                 nlohmann::json j;
-                j = {{key, attr}};
+                j = { { key, attr } };
                 copyFile << prettifyLine(j.dump(), false) << std::endl;
                 copyFile << line << std::endl;
             }
@@ -64,19 +64,18 @@ void DnsMap::updateEntry(const std::string &key,
 
         auto last_character = line.find_last_not_of(' ');
         bool hasEndComma = false;
-        if (line[last_character] == ',') {
+        if(line[last_character] == ',') {
             hasEndComma = true;
             line = line.substr(0, last_character);
         }
         nlohmann::json j = nlohmann::json::parse("{" + line + "}");
 
         auto e = j.items().begin();
-        if (updateMap) {
-            this->mac_set.insert(static_cast<std::string> (e.value()[0]));
+        if(updateMap) {
+            this->mac_set.insert(static_cast<std::string>(e.value()[0]));
         }
 
-
-        if (e.key() == key) {
+        if(e.key() == key) {
 
             j[e.key()] = attr;
             entryUpdated = true;
@@ -84,7 +83,7 @@ void DnsMap::updateEntry(const std::string &key,
 
         copyFile << prettifyLine(j.dump(), hasEndComma || !entryUpdated) << std::endl;
     }
-    if (updateMap) {
+    if(updateMap) {
         remove(copyFileName.c_str());
         return;
     }
@@ -93,11 +92,10 @@ void DnsMap::updateEntry(const std::string &key,
     rename(copyFileName.c_str(), filename.c_str());
 }
 
-
-std::vector<std::string> DnsMap::getEntry(const std::string &key) {
+std::vector<std::string> DnsMap::getEntry(std::string const& key) {
     std::ifstream inputFile(filename);
     nlohmann::json j = nlohmann::json::parse(inputFile, nullptr, true, true);
-    if (j.contains(key)) {
+    if(j.contains(key)) {
         return j[key];
     }
 
