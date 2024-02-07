@@ -1,29 +1,16 @@
-#include <cstring>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <crafter.h>
-#include <fstream>
-#include <string>
-#include <getopt.h>
-
-#include "../config/DnsMapUser.h"
-#include "../config/DnsMapUserSettings.h"
-#include "../networking/ip_getter.h"
-#include "../networking/crafter_requester.h"
-
-
-#define BUFFER_SIZE 1024
-std::string getDnsServerRedirect(std::string, std::string);
-int getCacheTimeout(DnsMapUserSettings&);
+#include "tcp.h"
 
 void tcp(int dns_port, std::string dns_address, std::string upstream_dns, int upstream_port, int timeout, std::string domain){
     DnsMapUser dnsMapUser;
     DnsMapUserSettings dnsMapUserSettings;
+    DnsMapCache dnsMapCache;
     std::string dnsRedirect = getDnsServerRedirect(dns_address, upstream_dns);
 
 
     CrafterRequester requester(dnsMapUserSettings.get_setting("iface"));
-    IPGetter ipgetter(&requester, dnsMapUser, dnsMapUserSettings.get_setting("ip_mask"), timeout);
+
+    dnsMapCache.synchronizeCacheWithUserConfig(dnsMapUser);
+    IPGetter ipgetter(&requester, &dnsMapCache, dnsMapUserSettings.get_setting("ip_mask"), timeout);
 
     int cacheTimeout = getCacheTimeout(dnsMapUserSettings);
 

@@ -1,28 +1,12 @@
-#include <cstring>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <crafter.h>
-#include <fstream>
-#include <string>
-#include <optional>
-#include <getopt.h>
-
-#include "../config/DnsMapUser.h"
-#include "../config/DnsMapUserSettings.h"
-#include "../networking/ip_getter.h"
-#include "../networking/crafter_requester.h"
-
-#define BUFFER_SIZE 1024
-std::string getDnsServerRedirect(std::string, std::string);
-std::optional<std::string> getIface(DnsMapUserSettings&);
-std::optional<std::string> getMask(DnsMapUserSettings&, std::string const&);
-int getCacheTimeout(DnsMapUserSettings&);
+#include "udp.h"
 
 void udp(int dns_port, std::string dns_address, std::string upstream_dns, int upstream_port, int timeout, std::string domain){
 
     Crafter::InitCrafter();
     DnsMapUser dnsMapUser;
     DnsMapUserSettings dnsMapUserSettings;
+    DnsMapCache dnsMapCache;
+
     std::string dnsRedirect = getDnsServerRedirect(dns_address, upstream_dns);
 
     auto iface = getIface(dnsMapUserSettings);
@@ -40,8 +24,9 @@ void udp(int dns_port, std::string dns_address, std::string upstream_dns, int up
     int cacheTimeout = getCacheTimeout(dnsMapUserSettings);
 
     CrafterRequester requester(iface.value());
-    IPGetter ipgetter(&requester, dnsMapUser, mask.value(), timeout);
 
+    dnsMapCache.synchronizeCacheWithUserConfig(dnsMapUser);
+    IPGetter ipgetter(&requester, &dnsMapCache, mask.value(), timeout);
 
     struct sockaddr_in server =
             {

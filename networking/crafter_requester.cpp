@@ -70,6 +70,6 @@ void CrafterRequester::listen_for_requests() {
     }).detach();
 }
 
-void CrafterRequester::request(std::string mask, std::string macRequested) {
+void CrafterRequester::request(std::string mask, std::string macRequested, DnsMapCache *dnsMapCache) {
 	requests.push(std::make_pair(mask, macRequested));
 }

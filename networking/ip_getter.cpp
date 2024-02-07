@@ -8,14 +8,13 @@
 #include <utility>
 #include <vector>
 
-IPGetter::IPGetter(CrafterRequester *requester, DnsMapUser& dnsMapUser, std::string local_network_ip_mask, int timeout)
+IPGetter::IPGetter(CrafterRequester *requester, DnsMapCache *dnsMapCache, std::string local_network_ip_mask, int timeout)
     : requester(requester)
+    , dnsMapCache(dnsMapCache)
     , map(&requester->map)
     , map_lock(requester->map_lock)
     , local_network_ip_mask(local_network_ip_mask)
-    , timeout(timeout) {
-     dnsMapCache.synchronizeCacheWithUserConfig(dnsMapUser);
-}
+    , timeout(timeout) {}
 
 std::string IPGetter::wait_for_promise(std::promise<std::string> &promise) {
    auto future = promise.get_future();
@@ -30,7 +29,7 @@ std::string IPGetter::wait_for_promise(std::promise<std::string> &promise) {
 std::string IPGetter::get_ip(std::string mac, int cacheTimeout) {
    //std::cout << "Request: MAC=" << mac << std::endl;
 
-   std::vector<std::string> cacheAttributes = dnsMapCache.getIpAttributes(mac);
+   std::vector<std::string> cacheAttributes = dnsMapCache->getIpAttributes(mac);
    if (!cacheAttributes.empty() && TimeUtils::valid(cacheAttributes[1], cacheTimeout)) {
        //std::cout << "Using cache" << std::endl;
        return cacheAttributes[0];
@@ -50,7 +49,7 @@ std::string IPGetter::get_ip(std::string mac, int cacheTimeout) {
    } else {
        cacheAttributes.push_back(resultIP);
        cacheAttributes.push_back(TimeUtils::timeNow());
-       dnsMapCache.updateEntry(mac, cacheAttributes);
+       dnsMapCache->updateEntry(mac, cacheAttributes);
    }
    return resultIP;
 }
