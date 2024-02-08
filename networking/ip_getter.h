@@ -12,7 +12,7 @@
 
 class IPGetter {
 private:
-    std::string local_network_ip_mask; // Something like "192.168.0.*"
+    std::string local_network_ip_mask; // Something like "255.255.255.0"
     CrafterRequester* requester;
 
     std::map<std::string, std::shared_ptr<std::promise<std::string>>>* map;

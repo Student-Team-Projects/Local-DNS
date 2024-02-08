@@ -1,7 +1,7 @@
 # English version
 Polish below
 ## What is this?
-This project defines a wrapper on DNS resolution, allowing the user to define "fake" domain name addresses which map to mac addresses on a local network. DNS calls on these addresses then returns the IP address of the device with that mac.
+This project defines a wrapper on DNS resolution, allowing the user to define "fake" domain name addresses which map to mac addresses on a local network. DNS calls on these addresses then return the IP address of the device with that mac.
 ## Where does this work?
 The project was intended for Arch Linux, but you might be able to get it to work on other Linux distributions.
 ## Usage
@@ -131,4 +131,4 @@ $ sudo systemctl enable local-dns.service
 ### DNS na linuksie
 Definiujemy własny server DNS działający na localhoscie, który odpowiada na standardowe query DNSowe jako proxy do prawdziwego serwera. Na query z adresami zakończonymi .localdns, odpowiada zgodnie z zawartoscią /etc/local_dns/DnsMapUser.config.
 ### Uzyskiwanie IP z adresu MAC
-Serwer wysyła jeden ARP ping pakiet do każdego IP w podsieci wybranej przez użytkownika, równolegle. Inny wątek ciągle słucha pakietów przychodzących, więc jeśli poszukiwany MAC jest w podsieci, dostaniemy odpowiedź od odpowiedniego IP. Dodatkowo, odpowiedzie są zapisywane w cache. Wówczas wyciągamy IP z tego cache jeśli prawdziwe ARP pingi były wykonane relatywnie niedawno ("relatywnie" jest konfigurowane przez użytkownika, domyślnie 30 dni).
+Serwer wysyła jeden ARP ping pakiet do każdego IP w podsieci wybranej przez użytkownika, równolegle. Inny wątek ciągle słucha pakietów przychodzących, więc jeśli poszukiwany MAC jest w podsieci, dostaniemy odpowiedź od odpowiedniego IP. Dodatkowo, odpowiedzi są zapisywane w cache. Wówczas wyciągamy IP z tego cache jeśli prawdziwe ARP pingi były wykonane relatywnie niedawno ("relatywnie" jest konfigurowane przez użytkownika, domyślnie 30 dni).
