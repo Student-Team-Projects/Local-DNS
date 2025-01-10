@@ -1,24 +1,7 @@
-#include <cstring>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <crafter.h>
-#include <net/if.h>
-#include <ifaddrs.h>
-#include <fstream>
-#include <string>
+#include <cstdio>
 #include <getopt.h>
-#include "dns_server_utils.h"
-#include "tcp.h"
-#include "udp.h"
-#include <optional>
 
-#include "../config/DnsMapUser.h"
-#include "../config/DnsMapUserSettings.h"
-#include "../networking/ip_getter.h"
-#include "../networking/crafter_requester.h"
-#include "../networking/utils.h"
+#include "udp.h"
 
 int main(int argc, char** argv) {
 
@@ -27,14 +10,16 @@ int main(int argc, char** argv) {
     std::string dns_address = "127.0.0.1";
     std::string upstream_dns = "8.8.8.8";
     int upstream_port = 53;
-    bool is_tcp = false;
     int timeout = 3000;
     std::string domain = "localdns";
+    std::string csv_database = "/var/cache/local-dns/DnsDatabase.csv";
+    bool debug = false;
 
     static struct option long_options[] = {
         { "port", required_argument, 0, 'p' },     { "address", required_argument, 0, 'a' },
-        { "upstream", required_argument, 0, 'u' }, { "tcp", required_argument, 0, 't' },
-        { "timeout", required_argument, 0, 'o' },  { "domain", required_argument, 0, 'd' }
+        { "upstream", required_argument, 0, 'u' },
+        { "timeout", required_argument, 0, 'o' },  { "domain", required_argument, 0, 'd' },
+        { "csv_database", required_argument, 0, 'c' },  { "debug", required_argument, 0, 'D' }
     };
     while(1) {
         /* getopt_long stores the option index here. */
@@ -68,8 +53,11 @@ int main(int argc, char** argv) {
         case 'd':
             domain = optarg;
             break;
-        case 't':
-            domain = is_tcp = std::stoi(optarg);
+        case 'c':
+            csv_database = optarg;
+            break;
+        case 'D':
+            debug = (bool)std::atoi(optarg);
             break;
         default:
             break;
@@ -79,18 +67,10 @@ int main(int argc, char** argv) {
     printf("address: %s\n", dns_address.c_str());
     printf("upstream_dns: %s\n", upstream_dns.c_str());
     printf("upstream_port: %d\n", upstream_port);
-    printf("is_tcp: %d\n", is_tcp);
     printf("timeout: %d\n", timeout);
     printf("domain: %s\n", domain.c_str());
+    printf("csv_database: %s\n", csv_database.c_str());
+    printf("debug: %d\n", debug);
 
-    Crafter::InitCrafter();
-
-    if(is_tcp) {
-        pid_t pid = fork();
-        if(pid == 0) {
-            tcp(dns_port, dns_address, upstream_dns, upstream_port, timeout, domain);
-        }
-    }
-
-    udp(dns_port, dns_address, upstream_dns, upstream_port, timeout, domain);
+    udp(dns_port, dns_address, upstream_dns, upstream_port, timeout, domain, csv_database, debug);
 }
