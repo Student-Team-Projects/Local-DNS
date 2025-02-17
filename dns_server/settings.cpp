@@ -12,7 +12,7 @@ std::string openConfig(std::string name) {
 
     // Check if the file is not good or cannot be opened
     if (!file.good() || !file.is_open()) {
-        filename = "/etc/local_dns/" + name;
+        filename = "/etc/local-dns/" + name;
         file.open(filename);
 
         if (!file.good() || !file.is_open()) {
@@ -115,6 +115,7 @@ void config() {
     try {
         // Get json out of config
         json jsonData = json::parse(openConfig("DnsMapUserSettings.config"));
+        globalSettings.timeout = static_cast<time_t>(1 * 86400); // days to seconds
         for (auto& [key, valueRaw] : jsonData.items()) {
             if (valueRaw.is_array() && !valueRaw.empty()) {
                 std::string value = valueRaw[0];
@@ -133,6 +134,11 @@ void config() {
     catch (const std::exception& ex) {
         std::cerr << "Error: " << ex.what() << std::endl;
     }
+
+
+    // if(globalSettings.ifaceInfo.mask.length() <= 2){
+    //     globalSettings.ifaceInfo.mask = "255.255.255.0";
+    // }
 
     macToDomain = configDomains();
 
@@ -172,15 +178,15 @@ std::string getDnsServerRedirect(std::string dnsServer, std::string upstream_dns
     std::ifstream inputStream("/etc/resolv.conf");
     std::string nameserver_indicator = "nameserver ";
 
-    while(std::getline(inputStream, input)) {
-        std::string prefix = input.substr(0, nameserver_indicator.size());
-        if(prefix == nameserver_indicator) {
-            std::string dns = input.substr(nameserver_indicator.size());
-            if(dns != dnsServer) {
-                return dns;
-            }
-        }
-    }
+    // while(std::getline(inputStream, input)) {
+    //     std::string prefix = input.substr(0, nameserver_indicator.size());
+    //     if(prefix == nameserver_indicator) {
+    //         std::string dns = input.substr(nameserver_indicator.size());
+    //         if(dns != dnsServer) {
+    //             return dns;
+    //         }
+    //     }
+    // }
 
     return upstream_dns;
 }
