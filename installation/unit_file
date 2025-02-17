@@ -1,10 +1,14 @@
 [Unit]
-Description=Local dns service, defines a mapping between user defined addresses and IP from local network
+Description=Local DNS service, defines a mapping between user-defined addresses and IPs from the local network
+After=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/usr/local/local_dns
-ExecStart=sudo ./main.x
+User=root
+ExecStart=/bin/bash -c '/usr/bin/local-dns | /usr/bin/tee -a /var/log/local-dns/log'
+Restart=always
+StandardOutput=journal
+StandardError=journal
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target

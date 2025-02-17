@@ -1,4 +1,4 @@
-#include "dns_server_utils.h"
+#pragma once
 
 #include <cstring>
 #include <arpa/inet.h>
@@ -6,13 +6,11 @@
 #include <crafter.h>
 #include <fstream>
 #include <string>
-#include <optional>
-#include <getopt.h>
 
-#include "../config/DnsMapUser.h"
-#include "../config/DnsMapUserSettings.h"
-#include "../networking/ip_getter.h"
-#include "../networking/crafter_requester.h"
+#include "settings.h"
+#include "database.h"
+
+#define BUFFER_SIZE 1024
 
 void udp(
     int dns_port,
@@ -20,5 +18,7 @@ void udp(
     std::string upstream_dns,
     int upstream_port,
     int timeout,
-    std::string domain
+    std::string domain,
+    std::string csv,
+    bool debug
 );
