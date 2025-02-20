@@ -2,7 +2,7 @@
 #include <getopt.h>
 
 #include "udp.h"
-
+std::string domain = "localdns";
 int main(int argc, char** argv) {
 
     int c;
@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
     std::string upstream_dns = "8.8.8.8";
     int upstream_port = 53;
     int timeout = 3000;
-    std::string domain = "localdns";
+    
     std::string csv_database = "/var/cache/local-dns/DnsDatabase.csv";
     bool debug = false;
 

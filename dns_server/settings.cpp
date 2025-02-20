@@ -136,10 +136,12 @@ void config() {
     }
 
 
-    // if(globalSettings.ifaceInfo.mask.length() <= 2){
-    //     globalSettings.ifaceInfo.mask = "255.255.255.0";
-    // }
-
+    if(globalSettings.ifaceInfo.mask.length() <= 2){
+         globalSettings.ifaceInfo.mask = "255.255.255.0";
+    }
+    if(globalSettings.timeout <= 0) {
+        globalSettings.timeout = 30;
+    }
     macToDomain = configDomains();
 
     // Checks interface, if it is incorrect choose one based on mac addresses

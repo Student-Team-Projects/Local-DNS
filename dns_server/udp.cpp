@@ -74,7 +74,7 @@ void udp(
         if(debug)
             std::cout << "Class: " << DNSClass << std::endl << "Type: " << DNSType << std::endl;
 
-        if (addresses.contains(DNSName) && addresses[DNSName].contains(DNSMapKey)) {
+        if (DNSName.ends_with("." + domain) && addresses.contains(DNSName) && addresses[DNSName].contains(DNSMapKey)) {
             if(debug)
                 std::cout << "This domain, class and type exist in local database" << std::endl;
             bool areTTLsValid = true;
