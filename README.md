@@ -44,6 +44,10 @@ As well as:
 nameserver 127.0.0.1
 ```
 
+Alternatively, if you are using network menager, you may do so in the settings -> network menu, adding 127.0.0.1 into the DNS box in the ipv4 tab
+![image](https://github.com/user-attachments/assets/45dc65ba-157b-4f02-a21f-3b9f425cf01f)
+
+
 ### Configuration
 To configure the program open each of the files in /etc/local_dns/ and fill them in, following the instructions in the comments.
 
