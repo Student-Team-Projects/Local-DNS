@@ -44,7 +44,7 @@ As well as:
 nameserver 127.0.0.1
 ```
 
-Alternatively, if you are using network menager, you may do so in the settings -> network menu, adding 127.0.0.1 into the DNS box in the ipv4 tab
+Alternatively, if you are using network menager, you may do so in the settings -> network menu, adding 127.0.0.1 into the DNS box in the ipv4 tab and disabling the automatic option.
 ![image](https://github.com/user-attachments/assets/45dc65ba-157b-4f02-a21f-3b9f425cf01f)
 
 
